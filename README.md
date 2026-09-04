@@ -1,8 +1,8 @@
 # Homelab Architecture
 
-A self-hosted homelab (on a old Lenovo laptop) exposing services to the internet without paying for a proxying tier that supports non-HTTP traffic and without directly exposing the home network's IP address.
+A self-hosted homelab (on an old Lenovo laptop) exposing services to the internet without paying for a proxying tier that supports non-HTTP traffic and without directly exposing the home network's IP address.
 
-The core problem: Cloudflare's free proxy tier ("orange cloud") only proxies HTTP(S) traffic — it can't front raw TCP services like a Minecraft server. Solving this without paying for a business-tier CDN meant building a lightweight reverse-proxy relay on a free-tier cloud VM instead.
+The simplest solution for a proxy is to use Cloudflare's proxy (the orange cloud), but it only proxies HTTP traffic on the free tier. Not wanting to pay for Cloudflare Spectrum or expose my home IP led me to build out a simple reverse proxy.
 
 ## Architecture
 
@@ -47,8 +47,8 @@ flowchart TB
 
 ## Design
 
-- **Relay VM (Oracle Cloud Ampere A1):** proxies traffic, and is the only publicly exposed port. Runs nginx for both standard HTTP(S) reverse proxying and raw TCP stream proxying, Certbot for automated TLS issuance, and Uptime Kuma for monitoring.
-- **Tailscale mesh:** connects the relay to the home network over an encrypted tunnel, so the home network's real IP is never exposed to the internet — only the relay's IP is public. ACL permissions also managed to restrict the VMs permissions to purely forwarding traffic.
+- **Relay VM (Oracle Cloud Ampere A1):** proxies traffic, and exposes the only public facing ports. Runs nginx for both standard HTTP(S) reverse proxying and raw TCP stream proxying, Certbot for automated TLS registration, and Uptime Kuma for monitoring.
+- **Tailscale mesh:** connects the relay to the home network over an encrypted tunnel, so the home network's real IP is never exposed to the internet. Tailscale Access Control Lists configured to restrict the VM's permissions to purely forwarding traffic.
 - **Dynamic DNS:** `ddclient` monitors public IP changes and updates DNS records automatically.
 - **Certificate management:** TLS certificates are issued via the Let's Encrypt CA.
 
