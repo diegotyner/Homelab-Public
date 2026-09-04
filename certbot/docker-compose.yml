@@ -1,0 +1,7 @@
+services:
+  certbot:
+    image: certbot/dns-cloudflare
+    container_name: certbot
+    volumes:
+      - ./certs:/etc/letsencrypt
+      - ./cloudflare.ini:/etc/cloudflare.ini:ro

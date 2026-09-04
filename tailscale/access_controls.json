@@ -1,0 +1,13 @@
+{
+  "hosts": {
+    "home-server": "100.x.x.x",
+    "relay": "100.x.x.x"
+  },
+  "grants": [
+    {
+      "src": ["tag:relay"],
+      "dst": ["tag:home-server"],
+      "ip": ["tcp:445", "tcp:8096", "tcp:25565"]
+    }
+  ]
+}
