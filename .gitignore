@@ -1,0 +1,4 @@
+.env
+**/data/
+certbot/cloudflare.ini
+certbot/certs/

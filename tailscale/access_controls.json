@@ -7,7 +7,7 @@
     {
       "src": ["tag:relay"],
       "dst": ["tag:home-server"],
-      "ip": ["tcp:445", "tcp:8096", "tcp:25565"]
+      "ip": ["tcp:445", "tcp:8096", "tcp:25565", "tcp:14310"]
     }
   ]
 }

@@ -1,0 +1,17 @@
+services:
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    restart: unless-stopped
+    command: -config.file=/etc/loki/loki-config.yml
+    ports:
+      # NON-STANDARD: bound to the Tailscale IP so only the tailnet can push.
+      # ${VAR:?msg} aborts startup if unset, instead of silently binding every
+      # interface (your README's Docker-bypasses-ufw trap).
+      - "${TAILSCALE_IP:?set TAILSCALE_IP in .env}:14310:3100"
+    volumes:
+      # Directory mount: edits are always seen, unlike single-file mounts.
+      - ./config:/etc/loki:ro
+      # Bind mount so you can du -sh it. Must be owned by 10001, and
+      # loki-config.yml must point its storage paths at /loki.
+      - ./data:/loki

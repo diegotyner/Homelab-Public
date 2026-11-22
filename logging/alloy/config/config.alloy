@@ -1,0 +1,48 @@
+// Find running containers through the Docker socket
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+// Turn Docker metadata into labels you can query in Grafana
+discovery.relabel "containers" {
+  targets = discovery.docker.containers.targets
+
+  // container name, minus the leading "/" Docker adds
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+  }
+
+  // the compose service name, e.g. "jellyfin" or "mc"
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "service"
+  }
+}
+
+// Read the containers' logs
+loki.source.docker "containers" {
+  host          = "unix:///var/run/docker.sock"
+  targets       = discovery.docker.containers.targets
+  relabel_rules = discovery.relabel.containers.rules
+  forward_to    = [loki.process.filter.receiver]
+}
+
+// Drop Loki's and Grafana's own info-level chatter; the stack would otherwise mostly log itself
+loki.process "filter" {
+  stage.match {
+    selector = "{service=~\"loki|grafana\"} |= \"level=info\""
+    action   = "drop"
+  }
+
+  forward_to = [loki.write.local.receiver]
+}
+
+// Push to Loki over the shared compose network (not localhost)
+loki.write "local" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+  external_labels = { host = "lenovo" }
+}

@@ -1,0 +1,27 @@
+name: logging
+
+services:
+  loki:
+    extends:
+      file: loki/docker-compose.yml
+      service: loki
+    networks: [logging]
+
+  grafana:
+    extends:
+      file: grafana/docker-compose.yml
+      service: grafana
+    networks: [logging]
+    depends_on: [loki]       # restored: only possible because services live here
+
+  alloy:
+    extends:
+      file: alloy/docker-compose.yml
+      service: alloy
+    networks: [logging]
+    depends_on: [loki]
+
+networks:
+  # Declared here, not in the service files. The actual network will be named
+  # logging_logging (project name + network name).
+  logging:

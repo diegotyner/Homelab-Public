@@ -1,0 +1,17 @@
+services:
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "${TAILSCALE_IP:?set TAILSCALE_IP in .env}:14300:3000"   # admin UI, tailnet only
+    environment:
+      # Only applied the FIRST time Grafana creates its database. Changing it
+      # later does nothing; use the Grafana UI or CLI to change the password.
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?set GRAFANA_ADMIN_PASSWORD in .env}
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+    volumes:
+      - ./data:/var/lib/grafana    # owned by 472
+      # NON-STANDARD: the Loki datasource is defined as code and survives a
+      # wiped data dir. Only the datasources subfolder is mounted, read-only.
+      - ./provisioning/datasources:/etc/grafana/provisioning/datasources:ro

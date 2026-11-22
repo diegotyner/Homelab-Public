@@ -1,0 +1,18 @@
+services:
+  alloy:
+    image: grafana/alloy:latest
+    container_name: alloy
+    restart: unless-stopped
+    user: root    # needs the docker socket; tighter option is group_add with the docker GID
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data    # saved read positions survive restarts
+      - /etc/alloy/config.alloy
+    ports:
+      - "127.0.0.1:14320:12345"    # debug UI and /-/reload, host loopback only
+    volumes:
+      - ./config:/etc/alloy:ro
+      - ./data:/var/lib/alloy/data
+      # :ro does NOT make the socket safe. Treat this container as root-equivalent.
+      - /var/run/docker.sock:/var/run/docker.sock:ro

@@ -1,0 +1,21 @@
+services:
+  alloy:
+    image: grafana/alloy:latest # confirm the tag has an arm64 build
+    container_name: alloy
+    restart: unless-stopped
+    user: root # docker socket plus root:adm-owned /var/log/ufw.log
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+    ports:
+      - "127.0.0.1:14320:12345"
+    volumes:
+      - ./config:/etc/alloy:ro
+      - ./data:/var/lib/alloy/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Whole directory, not just ufw.log: logrotate replaces that file and a
+      # single-file mount would keep pointing at the deleted one.
+      - /var/log:/host/var/log:ro
+    # No networks block: config.alloy pushes to http://<lenovo-tailscale-ip>:14310.
